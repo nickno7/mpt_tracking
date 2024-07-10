@@ -1,5 +1,36 @@
 import numpy as np
 
+# Problem 1
+class KalmanFilter():
+    def __init__(self, shape):
+        self.shape = shape
+        self.A = np.eye(shape)  # Zustandsübergangsmatrix
+        self.H = np.eye(shape)  # Beobachtungsmatrix
+        self.Q = np.eye(shape) * 0.0001  # Prozessrauschen
+        self.R = np.eye(shape) * 0.04  # Messrauschen
+        self.x = np.zeros(shape)  # Zustandsvektor
+        self.P = np.eye(shape)  # Kovarianzmatrix
+
+    def reset(self, measurement):
+        self.x = measurement[:self.shape]
+        self.P = np.eye(self.shape)
+        return self.x
+
+    def update(self, dt, measurement):
+        # Prediction
+        self.x = np.dot(self.A, self.x)
+        self.P = np.dot(self.A, np.dot(self.P, self.A.T)) + self.Q
+
+        # Update
+        S = np.dot(self.H, np.dot(self.P, self.H.T)) + self.R
+        K = np.dot(self.P, np.dot(self.H.T, np.linalg.inv(S)))
+        y = measurement[:self.shape] - np.dot(self.H, self.x)
+        self.x = self.x + np.dot(K, y)
+        self.P = self.P - np.dot(K, np.dot(self.H, self.P))
+
+        return self.x
+        
+
 # Problem 2
 class RandomNoise:
     def __init__(self, shape):
